@@ -1,0 +1,22 @@
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 0.7rem;
+
+  & input, label {
+    cursor: pointer;
+  }
+
+  & fieldset {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border-radius: 10px;
+    font-size: 1rem;
+  }
+
+  & legend {
+    padding: 0 !important;
+  }
+}
