@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react'
+import React, { useState, useContext, useEffect, useCallback } from 'react'
 import PropTypes from 'prop-types'
 
 import MenuContext from '../../context/context'
@@ -20,35 +20,59 @@ function CheckboxList({ options = [], index }) {
   const [checkedList, setCheckedList] = useState(uncheckAll(options))
   const context = useContext(MenuContext)
   const { addItemPrice, removeItemPrice, menuPrice } = context
+  const [isMenuPriceZero, setIsMenuPriceZero] = useState(menuPrice === 0)
 
   useEffect(() => {
-    menuPrice === 0 && setCheckedList(uncheckAll(options))
-  }, [menuPrice, options])
+    setIsMenuPriceZero(menuPrice === 0)
+  }, [menuPrice])
 
-  const handleDropAll = (e) => {
-    e.preventDefault()
-    let count = 0
-    setCheckedList(
-      checkedList.map((option) => {
-        const { Price: price, checked } = option
-        if (checked) {
-          count = count + price
-          return { ...option, checked: false }
-        }
-        return option
-      }),
-    )
-    removeItemPrice(count)
-  }
-
-  const changeList = (id, checked, price) => {
-    if (checked) {
-      addItemPrice(price)
-    } else {
-      removeItemPrice(price)
+  useEffect(() => {
+    if (isMenuPriceZero) {
+      setCheckedList(uncheckAll(options))
     }
-    setCheckedList((checkedList) => toggleOption(checkedList, id, checked))
-  }
+  }, [isMenuPriceZero, options])
+
+  const handleDropAll = useCallback(
+    (e) => {
+      e.preventDefault()
+      let count = 0
+      setCheckedList(
+        checkedList.map((option) => {
+          const { Price: price, checked } = option
+          if (checked) {
+            count = count + price
+            return { ...option, checked: false }
+          }
+          return option
+        }),
+      )
+      removeItemPrice(count)
+    },
+    [checkedList, removeItemPrice],
+  )
+
+  const changeList = useCallback(
+    (id, checked, price) => {
+      if (checked) {
+        addItemPrice(price)
+      } else {
+        removeItemPrice(price)
+      }
+      setCheckedList((checkedList) => toggleOption(checkedList, id, checked))
+    },
+    [addItemPrice, removeItemPrice],
+  )
+
+  const ListItem = React.memo(({ id, checked, price, name, changeList }) => (
+    <label>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => changeList(id, e.target.checked, price)}
+      />{' '}
+      {name} - {price} €
+    </label>
+  ))
 
   return (
     <fieldset>
@@ -60,14 +84,14 @@ function CheckboxList({ options = [], index }) {
           Price: price,
           checked,
         }) => (
-          <label key={id}>
-            <input
-              type="checkbox"
-              checked={checked}
-              onChange={(e) => changeList(id, e.target.checked, price)}
-            />{' '}
-            {name} - {price} €
-          </label>
+          <ListItem
+            key={id}
+            id={id}
+            checked={checked}
+            price={price}
+            name={name}
+            changeList={changeList}
+          />
         ),
       )}
       <button onClick={(e) => handleDropAll(e)}>Remove all options</button>

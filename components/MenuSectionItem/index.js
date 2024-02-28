@@ -1,14 +1,12 @@
 import React, { useState, useContext } from 'react'
 import PropTypes from 'prop-types'
-
 import MenuContext from '../../context/context'
 import styles from './MenuSectionItem.module.scss'
 import Image from 'next/image'
 
-function MenuSectionItem({ name, price, imageUrl, description, children }) {
+const MenuSectionItem = ({ name, price, imageUrl, description, children }) => {
   const [isOpen, setIsOpen] = useState(false)
-  const context = useContext(MenuContext)
-  const { addItemPrice, removeItemPrice } = context
+  const { addItemPrice, removeItemPrice } = useContext(MenuContext)
 
   const handleClick = () => {
     setIsOpen(!isOpen)
@@ -21,7 +19,7 @@ function MenuSectionItem({ name, price, imageUrl, description, children }) {
 
   return (
     <article
-      className={isOpen ? `${styles.item} ${styles.itemSelected}` : styles.item}
+      className={`${styles.item} ${isOpen ? styles.itemSelected : ''}`}
       onClick={handleClick}
     >
       <h3 className={styles.title}>{name}</h3>
@@ -38,9 +36,7 @@ function MenuSectionItem({ name, price, imageUrl, description, children }) {
           layout="fixed"
         />
       )}
-      <div style={isOpen ? { display: 'block' } : { display: 'none' }}>
-        {children}
-      </div>
+      <div style={{ display: isOpen ? 'block' : 'none' }}>{children}</div>
     </article>
   )
 }

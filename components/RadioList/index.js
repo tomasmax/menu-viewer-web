@@ -8,7 +8,7 @@ function RadioList({ options = [], index }) {
   const { addItemPrice, removeItemPrice, menuPrice } = context
   const previousPrice = useRef(0)
 
-  const [selectedId, setSelectedId] = useState()
+  const [selectedId, setSelectedId] = useState(null)
 
   useEffect(() => {
     if (menuPrice === 0) {
@@ -19,11 +19,8 @@ function RadioList({ options = [], index }) {
 
   const handleRadioButtonChange = (e, id, price) => {
     setSelectedId(id)
-    if (previousPrice.current) {
-      addItemPrice(price - previousPrice.current)
-    } else {
-      addItemPrice(price)
-    }
+    const priceDifference = price - previousPrice.current
+    addItemPrice(priceDifference || price)
     previousPrice.current = price
   }
 
@@ -31,11 +28,11 @@ function RadioList({ options = [], index }) {
     e.preventDefault()
 
     if (selectedId) {
-      const selectedOption = options.filter(
+      const selectedOption = options.find(
         ({ MenuItemOptionSetItemId: id }) => id === selectedId,
       )
       setSelectedId(null)
-      removeItemPrice(selectedOption[0].Price)
+      removeItemPrice(selectedOption.Price)
       previousPrice.current = 0
     }
   }
@@ -57,7 +54,7 @@ function RadioList({ options = [], index }) {
           </label>
         ),
       )}
-      <button onClick={(e) => handleDropAll(e)}>Remove option</button>
+      <button onClick={handleDropAll}>Remove option</button>
     </fieldset>
   )
 }
