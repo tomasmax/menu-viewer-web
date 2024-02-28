@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 
 import Head from 'next/head'
 import styles from '../styles/Home.module.scss'
@@ -15,31 +15,28 @@ export default function Home({
   },
 }) {
   const [menuPrice, setMenuPrice] = useState(0)
+  const [isSticky, setIsSticky] = useState(false)
 
-  const addItemPrice = (price) => {
-    setMenuPrice(menuPrice + price)
-  }
+  const addItemPrice = useCallback((price) => {
+    setMenuPrice((prevPrice) => prevPrice + price)
+  }, [])
 
-  const removeItemPrice = (price) => {
-    const difference = menuPrice - price
-    difference < 0 ? setMenuPrice(0) : setMenuPrice(menuPrice - price)
-  }
-
-  function addStickyClass(element) {
-    const sticky = element.offsetTop
-    if (window.pageYOffset > sticky) {
-      element.classList.add(styles.sticky)
-    } else {
-      element.classList.remove(styles.sticky)
-    }
-  }
+  const removeItemPrice = useCallback((price) => {
+    setMenuPrice((prevPrice) => {
+      const difference = prevPrice - price
+      return difference < 0 ? 0 : difference
+    })
+  }, [])
 
   useEffect(() => {
-    window.onscroll = function () {
-      const menuPriceElement = document.getElementById('menuPrice')
-      addStickyClass(menuPriceElement)
-    }
+    const menuPriceElement = document.getElementById('menuPrice')
+    const topbarOffset = menuPriceElement.offsetTop
+    const checkIfSticky = () => setIsSticky(window.scrollY > topbarOffset)
+    window.addEventListener('scroll', checkIfSticky)
+    return () => window.removeEventListener('scroll', checkIfSticky)
   }, [])
+
+  const resetMenuPrice = () => setMenuPrice(0)
 
   return (
     <MenuContext.Provider value={{ menuPrice, addItemPrice, removeItemPrice }}>
@@ -58,9 +55,17 @@ export default function Home({
           <p className={styles.description}>
             Get started by choosing your Menu
           </p>
-          <div id="menuPrice" className={styles.menuPriceContainer}>
+          <div
+            id="menuPrice"
+            className={
+              isSticky
+                ? `${styles.menuPriceContainer} ${styles.sticky}`
+                : styles.menuPriceContainer
+            }
+          >
+            {' '}
             <p className={styles.description}>Menu total price: {menuPrice}</p>
-            <button className={styles.button} onClick={() => setMenuPrice(0)}>
+            <button className={styles.button} onClick={resetMenuPrice}>
               Remove selected menu items
             </button>
           </div>
@@ -117,10 +122,14 @@ export default function Home({
   )
 }
 
-export async function getServerSideProps() {
-  const response = await axios.get(
-    'https://menus.flipdish.co/prod/16798/e6220da2-c34a-4ea2-bb51-a3e190fc5f08.json',
-  )
+export async function getStaticProps() {
+  const MENU_API_URL =
+    'https://menus.flipdish.co/prod/16798/e6220da2-c34a-4ea2-bb51-a3e190fc5f08.json'
 
-  return { props: { menuData: response.data } }
+  try {
+    const response = await axios.get(MENU_API_URL)
+    return { props: { menuData: response.data } }
+  } catch (error) {
+    console.error('Error fetching menu data', error)
+  }
 }

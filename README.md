@@ -1,6 +1,8 @@
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
-I created a web app to show flipdish's menu that fetches data in Server side rendering and is optimized for SEO and web performance. Nextjs already has a lot of improvements in web performance, as Image component that loads images in the most efficient way and built in SSR.
+I created a web app to show flipdish's menu. I used Static Generation, the page HTML is generated at build time. That means in production, the page HTML is generated when you run next build. This HTML will then be reused on each request. It can be cached by a CDN. Which makes it much faster than having a server render the page on every request.
+
+It is optimized for SEO and web performance. Nextjs already has a lot of improvements in web performance, as Image component that loads images in the most efficient way and built in SSR.
 
 You can check the menu at the home page, select dishes in the different sections and select options if they are available.
 
